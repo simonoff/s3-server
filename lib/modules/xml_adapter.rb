@@ -5,22 +5,22 @@ module XmlAdapter
   class << self
     def buckets(bucket_objects)
       ''.tap do |output|
-        xml = Builder::XmlMarkup.new(:target => output)
-        xml.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-        xml.ListAllMyBucketsResult(:xmlns => "http://s3.amazonaws.com/doc/2006-03-01/") { |lam|
-          lam.Owner { |owner|
-            owner.ID("123")
-            owner.DisplayName("S3-server")
-          }
-          lam.Buckets { |buckets|
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.ListAllMyBucketsResult(xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/') do |lam|
+          lam.Owner do |owner|
+            owner.ID('123')
+            owner.DisplayName('S3-server')
+          end
+          lam.Buckets do |buckets|
             bucket_objects.each do |bucket|
               buckets.Bucket do |b|
                 b.Name(bucket.name)
-                b.CreationDate(bucket.creation_date.strftime("%Y-%m-%dT%H:%M:%S.000Z"))
+                b.CreationDate(bucket.created_at)
               end
             end
-          }
-        }
+          end
+        end
       end
     end
 
@@ -156,24 +156,24 @@ module XmlAdapter
     # ACL xml
     def acl(object = nil)
       ''.tap do |output|
-        xml = Builder::XmlMarkup.new(:target => output)
-        xml.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-        xml.AccessControlPolicy(:xmlns => "http://s3.amazonaws.com/doc/2006-03-01/") { |acp|
+        xml = Builder::XmlMarkup.new(target:  output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.AccessControlPolicy(xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/') do |acp|
           acp.Owner do |owner|
-            owner.ID("abc")
-            owner.DisplayName("You")
+            owner.ID('abc')
+            owner.DisplayName('You')
           end
           acp.AccessControlList do |acl|
             acl.Grant do |grant|
-              grant.Grantee("xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance",
-                            "xsi:type" => "CanonicalUser") do |grantee|
-                grantee.ID("abc")
-                grantee.DisplayName("You")
+              grant.Grantee('xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
+                            'xsi:type' => 'CanonicalUser') do |grantee|
+                grantee.ID('abc')
+                grantee.DisplayName('You')
               end
-              grant.Permission("FULL_CONTROL")
+              grant.Permission('FULL_CONTROL')
             end
           end
-        }
+        end
       end
     end
 

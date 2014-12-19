@@ -17,7 +17,7 @@ module RequestNormalizer
       when elts.length < 3
         params['s3_action_perform'] = :ls_bucket
         params['ls_bucket_query'] = query
-      when query['acl'] && query['acl'].empty?
+      when query.key?('acl')
         params['s3_action_perform'] = :get_acl
       else
         params['s3_action_perform'] = :get_object

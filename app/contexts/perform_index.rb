@@ -16,7 +16,8 @@ class PerformIndex
   private
 
   def perform_list_buckets
-    #TODO
+    buckets = Bucket.all
+    [200, :xml, XmlAdapter.buckets(buckets)]
   end
 
   def perform_ls_bucket
@@ -28,11 +29,17 @@ class PerformIndex
   end
 
   def perform_get_acl
-    #TODO
+    [200, :xml, XmlAdapter.acl]
   end
 
   def perform_get_object
-    #TODO
+    uri = "#{@params['path']}.#{@params['format']}"
+    s3o = S3Object.find_by(uri: uri)
+
+    unless s3o && File.exist?(s3o.file.path)
+      return 404, :xml, XmlAdapter.error_no_such_key(uri.split('/')[1..-1].join('/'))
+    end
+    [nil, :file, s3o]
   end
 
   def normalize_ls_bucket_query
