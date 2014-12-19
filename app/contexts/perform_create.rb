@@ -1,6 +1,6 @@
-class PostRequest
+class PerformCreate
   def self.call(request, params)
-    PostRequest.new(request, params).call
+    PerformCreate.new(request, params).call
   end
 
   def initialize(request, params)
@@ -10,7 +10,6 @@ class PostRequest
 
   def call
     uri = "#{@params['path']}/#{@params['key']}"
-    override_filename
 
     s3o = S3Object.find_by(uri: uri) || S3Object.new
     s3o.uri = uri
@@ -33,11 +32,6 @@ class PostRequest
       bucket = Bucket.create!(name: @params['path'])
     end
     bucket
-  end
-
-  def override_filename
-    fname = @params['key'].split('/').last
-    @params['file'].original_filename = fname
   end
 
   def format_response(s3o)

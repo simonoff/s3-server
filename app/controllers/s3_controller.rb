@@ -1,14 +1,13 @@
 class S3Controller < ApplicationController
   def index
-    show
-  end
-
-  def show
-    render json: '{"def":"show/index"}'
+    RequestNormalizer.normalize_index(params, request)
+    status, render_type, body = PerformIndex.call(params)
+    render render_type => body, status: status
   end
 
   def create
-    render xml: PostRequest.call(request, params)
+    RequestNormalizer.normalize_create(params)
+    render xml: PerformCreate.call(request, params), status: :created
   end
 
   def update
