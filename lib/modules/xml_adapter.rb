@@ -85,6 +85,20 @@ module XmlAdapter
       end
     end
 
+    def uploaded_object(endpoint, s3_object)
+      ''.tap do |output|
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.PostResponse(xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/') do |pr|
+          pr.Location("http://#{endpoint}" \
+                      "/#{s3_object.bucket.name}/#{s3_object.key}")
+          pr.Bucket(s3_object.bucket.name)
+          pr.Key(s3_object.key)
+          pr.Etag(s3_object.md5)
+        end
+      end
+    end
+
     def bucket(bucket)
       ''.tap do |output|
         xml = Builder::XmlMarkup.new(target: output)

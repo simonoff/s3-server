@@ -21,7 +21,7 @@ class PerformCreate
     s3o.md5 = Digest::MD5.file(s3o.file.path).hexdigest
     s3o.save!
 
-    format_response(s3o)
+    XmlAdapter.uploaded_object("#{@request.host}:#{@request.port}", s3o)
   end
 
   private
@@ -32,16 +32,5 @@ class PerformCreate
       bucket = Bucket.create!(name: @params['path'])
     end
     bucket
-  end
-
-  def format_response(s3o)
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" \
-    "<PostResponse>\n"\
-    "  <Location>http://#{@request.host}:#{@request.port}" \
-    "/#{s3o.bucket.name}/#{s3o.key}</Location>\n" \
-    "  <Bucket>#{s3o.bucket.name}</Bucket>\n" \
-    "  <Key>#{s3o.key}</Key>\n" \
-    "  <ETag>#{s3o.md5}</ETag>\n" \
-    "</PostResponse>"
   end
 end
