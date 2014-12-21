@@ -1,14 +1,22 @@
 class S3Controller < ApplicationController
   def index
-    show
-  end
-
-  def show
-    render json: '{"def":"show/index"}'
+    RequestNormalizer.normalize_index(params, request)
+    status, render_type, data = PerformIndex.call(params)
+    if render_type == :file
+      send_file(data.file.path,
+                type: data.content_type,
+                disposition: 'attachment',
+                stream: true,
+                buffer_size: 4096,
+                url_based_filename: false)
+    else
+      render render_type => data, status: status
+    end
   end
 
   def create
-    render xml: PostRequest.call(request, params)
+    RequestNormalizer.normalize_create(params)
+    render xml: PerformCreate.call(request, params), status: :created
   end
 
   def update
