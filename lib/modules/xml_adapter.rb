@@ -26,14 +26,14 @@ module XmlAdapter
 
     def error(error)
       ''.tap do |output|
-        xml = Builder::XmlMarkup.new(:target => output)
-        xml.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-        xml.Error { |err|
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.Error do |err|
           err.Code(error.code)
           err.Message(error.message)
           err.Resource(error.resource)
           err.RequestId(1)
-        }
+        end
       end
     end
 
@@ -60,42 +60,42 @@ module XmlAdapter
 
     def error_bucket_not_empty(name)
       ''.tap do |output|
-        xml = Builder::XmlMarkup.new(:target => output)
-        xml.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-        xml.Error { |err|
-          err.Code("BucketNotEmpty")
-          err.Message("The bucket you tried to delete is not empty.")
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.Error do |err|
+          err.Code('BucketNotEmpty')
+          err.Message('The bucket you tried to delete is not empty.')
           err.Resource(name)
           err.RequestId(1)
-        }
+        end
       end
     end
 
     def error_no_such_key(name)
       ''.tap do |output|
-        xml = Builder::XmlMarkup.new(:target => output)
-        xml.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-        xml.Error { |err|
-          err.Code("NoSuchKey")
-          err.Message("The specified key does not exist")
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.Error do |err|
+          err.Code('NoSuchKey')
+          err.Message('The specified key does not exist')
           err.Key(name)
           err.RequestId(1)
           err.HostId(2)
-        }
+        end
       end
     end
 
     def bucket(bucket)
       ''.tap do |output|
-        xml = Builder::XmlMarkup.new(:target => output)
-        xml.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-        xml.ListBucketResult(:xmlns => "http://s3.amazonaws.com/doc/2006-03-01/") { |lbr|
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.ListBucketResult(xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/') do |lbr|
           lbr.Name(bucket.name)
           lbr.Prefix
           lbr.Marker
-          lbr.MaxKeys("1000")
-          lbr.IsTruncated("false")
-        }
+          lbr.MaxKeys(1000)
+          lbr.IsTruncated(false)
+        end
       end
     end
 
@@ -147,7 +147,7 @@ module XmlAdapter
           lbr.Prefix(query['prefix'])
           lbr.Marker(query['marker'])
           lbr.MaxKeys(query['max-keys'])
-          lbr.IsTruncated(selected_s3_objects.count > query['max-keys'] )
+          lbr.IsTruncated(selected_s3_objects.count > query['max-keys'])
           append_objects_to_list_bucket_result(lbr, selected_s3_objects)
         end
       end
@@ -183,12 +183,12 @@ module XmlAdapter
     # </CopyObjectResult>
     def copy_object_result(object)
       ''.tap do |output|
-        xml = Builder::XmlMarkup.new(:target => output)
-        xml.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-        xml.CopyObjectResult { |result|
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.CopyObjectResult do |result|
           result.LastModified(object.modified_date)
           result.ETag("\"#{object.md5}\"")
-        }
+        end
       end
     end
   end
