@@ -24,6 +24,8 @@ class S3Controller < ApplicationController
   end
 
   def destroy
-    render json: '{}'
+    RequestNormalizer.normalize_delete(params, request)
+    PerformDestroy.call(params)
+    head :no_content
   end
 end

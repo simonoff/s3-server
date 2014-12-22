@@ -4,4 +4,5 @@ Rails.application.routes.draw do
   post '*path', to: 's3#create'
   patch '*path', to: 's3#update'
   put '*path', to: 's3#update'
+  delete '*path', to: 's3#destroy'
 end

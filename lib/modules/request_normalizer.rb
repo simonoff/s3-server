@@ -23,5 +23,21 @@ module RequestNormalizer
         params['s3_action_perform'] = :get_object
       end
     end
+
+    def normalize_delete(params, request)
+      path = request.path
+      query = request.query_parameters
+      elts = path.split('/')
+
+      case
+      when path == '/'
+        fail UnsupportedOperation
+      when elts.length < 3
+        params['s3_action_perform'] = :rm_bucket
+        params['rm_bucket_query'] = query
+      else
+        params['s3_action_perform'] = :rm_object
+      end
+    end
   end
 end

@@ -13,11 +13,13 @@ class FileUploader < CarrierWave::Uploader::Base
   def store_dir
     # "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
 
+    base_dir = Rails.application.secrets[:storage][:base_dir]
+
     key_prefix = model.key.split('/')
     if key_prefix.length > 1
-      Rails.root.join('storage', model.bucket.name, *key_prefix[0..-2])
+      Rails.root.join(base_dir, model.bucket.name, *key_prefix[0..-2])
     else
-      Rails.root.join('storage', model.bucket.name)
+      Rails.root.join(base_dir, model.bucket.name)
     end
   end
 
