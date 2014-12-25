@@ -1,8 +1,19 @@
 module RequestNormalizer
   class << self
     def normalize_create(params, request)
-      params[:s3_object_uri] = "#{params[:path]}/#{params[:key]}"
-      normalize_file_upload(params, request)
+      path = request.path
+      query = request.query_parameters
+      elts = path.split('/')
+
+      params[:bucket] = parse_bucket_name(params)
+      params[:s3_object_uri] = rebuild_uri(params)
+      case
+      when elts.length > 3 && query.key?('uploads')
+        params[:s3_action_perform] = :upload_initialization
+      else
+        params[:s3_action_perform] = :upload
+        normalize_file_upload(params, request)
+      end
     end
 
     def normalize_index(params, request)
@@ -15,12 +26,14 @@ module RequestNormalizer
         params[:s3_action_perform] = :list_buckets
       when elts.length < 3
         params[:s3_action_perform] = :ls_bucket
+        params[:bucket] = parse_bucket_name(params)
         params[:ls_bucket_query] = query
       when query.key?('acl')
         params[:s3_action_perform] = :get_acl
       else
         params[:s3_action_perform] = :get_object
-        params[:s3_object_uri] = "#{params[:path]}.#{params[:format]}"
+        params[:bucket] = parse_bucket_name(params)
+        params[:s3_object_uri] = rebuild_uri(params)
         params[:request_method] = request.method
       end
     end
@@ -39,9 +52,9 @@ module RequestNormalizer
         params[:s3_action_perform] = :set_acl
       else
         params[:s3_action_perform] = :store_object
-        params[:s3_object_uri] = "#{params[:path]}.#{params[:format]}"
-        params[:bucket] = elts[1]
-        params[:key] = path.split('/')[2..-1].join('/')
+        params[:s3_object_uri] = rebuild_uri(params)
+        params[:bucket] = parse_bucket_name(params)
+        params[:key] = parse_key_name(params)
         normalize_file_upload(params, request)
       end
 
@@ -61,7 +74,7 @@ module RequestNormalizer
         params[:rm_bucket_query] = query
       else
         params[:s3_action_perform] = :rm_object
-        params[:s3_object_uri] = "#{params[:path]}.#{params[:format]}"
+        params[:s3_object_uri] = rebuild_uri(params)
       end
     end
 
@@ -97,13 +110,30 @@ module RequestNormalizer
     end
 
     def normalize_copy_source(params, copy_source)
-      return unless copy_source.nil? || copy_source.size != 1
+      return if copy_source.nil? || copy_source.size != 1
       src_elts = copy_source.first.split('/')
       root_offset = src_elts.firts.empty? ? 1 : 0
 
       params[:src_bucket] = src_elts[root_offset]
       params[:src_object] = src_elts[1 + root_offset, -1].join('/')
       params[:s3_action_perform] = :copy_object
+    end
+
+    def parse_bucket_name(params)
+      params[:path].split('/').first
+    end
+
+    def parse_key_name(params)
+      rebuild_uri(params).split('/')[1..-1].join('/')
+    end
+
+    def rebuild_uri(params)
+      case
+      when params[:format]
+        params[:s3_object_uri] = "#{params[:path]}/#{params[:format]}"
+      when params[:key]
+        params[:s3_object_uri] = "#{params[:path]}/#{params[:key]}"
+      end
     end
   end
 end

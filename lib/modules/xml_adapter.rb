@@ -85,6 +85,20 @@ module XmlAdapter
       end
     end
 
+    def multipart_initialization(s3_object)
+      ''.tap do |output|
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.InitiateMultipartUploadResult(
+          xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/') do |imur|
+          imur.Bucket(s3_object.bucket.name)
+          imur.Key(s3_object.key)
+          imur.ETag(s3_object.md5)
+          imur.UploadId('VXBsb2FkIElEIGZvciA2aWWpbmcncyBteS1tb3ZpZS5tMnRzIHVwbG9hZA')
+        end
+      end
+    end
+
     def uploaded_object(endpoint, s3_object)
       ''.tap do |output|
         xml = Builder::XmlMarkup.new(target: output)

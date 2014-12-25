@@ -1,4 +1,6 @@
 class PerformCreate
+  DISPATCHER = Hash.new { |h, k| h[k] = "perform_#{k}" }
+
   def self.call(params, request)
     PerformCreate.new(params, request).call
   end
@@ -9,6 +11,23 @@ class PerformCreate
   end
 
   def call
+    send(DISPATCHER[@params[:s3_action_perform]])
+  end
+
+  private
+
+  def perform_upload_initialization
+    s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
+    s3o.uri = @params[:s3_object_uri]
+    s3o.bucket = handle_bucket
+    s3o.key = @params[:key]
+    s3o.md5 = '144c9defac04969c7bfad8efaa8ea194'
+    s3o.save!
+
+    XmlAdapter.multipart_initialization(s3o)
+  end
+
+  def perform_upload
     s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
     s3o.uri = @params[:s3_object_uri]
     s3o.file = @params[:file]
@@ -22,12 +41,10 @@ class PerformCreate
     XmlAdapter.uploaded_object("#{@request.host}:#{@request.port}", s3o)
   end
 
-  private
-
   def handle_bucket
-    unless (bucket = Bucket.find_by(name: @params[:path]))
+    unless (bucket = Bucket.find_by(name: @params[:bucket]))
       # Create if not exists facilities
-      bucket = Bucket.create!(name: @params[:path])
+      bucket = Bucket.create!(name: @params[:bucket])
     end
     bucket
   end
