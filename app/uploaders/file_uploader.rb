@@ -23,6 +23,10 @@ class FileUploader < CarrierWave::Uploader::Base
     end
   end
 
+  def cache_dir
+    File.join('tmp', 'uploads')
+  end
+
   # Provide a default URL as a default if there hasn't been a file uploaded:
   # def default_url
   #   # For Rails 3.1+ asset pipeline compatibility:

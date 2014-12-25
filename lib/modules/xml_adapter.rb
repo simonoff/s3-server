@@ -94,7 +94,7 @@ module XmlAdapter
                       "/#{s3_object.bucket.name}/#{s3_object.key}")
           pr.Bucket(s3_object.bucket.name)
           pr.Key(s3_object.key)
-          pr.Etag(s3_object.md5)
+          pr.ETag(s3_object.md5)
         end
       end
     end

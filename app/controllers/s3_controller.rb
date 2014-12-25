@@ -2,29 +2,35 @@ class S3Controller < ApplicationController
   def index
     RequestNormalizer.normalize_index(params, request)
     status, render_type, data = PerformIndex.call(params)
-    if render_type == :file
+    case render_type
+    when :file
       send_file(data.file.path,
-                type: data.content_type,
-                disposition: 'attachment',
-                stream: true,
-                buffer_size: 4096,
-                url_based_filename: false)
+                type: data.content_type, disposition: 'attachment',
+                stream: true, buffer_size: 4096, url_based_filename: false)
+    when :head
+      response.headers.tap do |hs|
+        hs['Content-Type'] = data.content_type
+        hs['Content-Length'] = data.size.to_s
+      end
+      head :ok
     else
       render render_type => data, status: status
     end
   end
 
   def create
-    RequestNormalizer.normalize_create(params)
-    render xml: PerformCreate.call(request, params), status: :created
+    RequestNormalizer.normalize_create(params, request)
+    render xml: PerformCreate.call(params, request), status: :created
   end
 
   def update
-    render json: '{}'
+    RequestNormalizer.normalize_update(params, request)
+    PerformUpdate.call(params)
+    render xml: '', status: 200
   end
 
   def destroy
-    RequestNormalizer.normalize_delete(params, request)
+    RequestNormalizer.normalize_destroy(params, request)
     PerformDestroy.call(params)
     head :no_content
   end
