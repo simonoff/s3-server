@@ -17,37 +17,33 @@ class PerformIndex
 
   def perform_list_buckets
     buckets = Bucket.all
-    [200, :xml, XmlAdapter.buckets(buckets)]
+    [:ok, :xml, XmlAdapter.buckets(buckets)]
   end
 
   def perform_ls_bucket
     bucket = Bucket.find_by(name: @params[:path])
-    return 404, :xml, XmlAdapter.error_no_such_bucket(@params[:path]) unless bucket
+    return :not_found, :xml, XmlAdapter.error_no_such_bucket(@params[:path]) unless bucket
 
     normalize_ls_bucket_query
-    [200, :xml, XmlAdapter.bucket_query(bucket, @params[:ls_bucket_query])]
+    [:ok, :xml, XmlAdapter.bucket_query(bucket, @params[:ls_bucket_query])]
   end
 
   def perform_get_acl
-    [200, :xml, XmlAdapter.acl]
+    [:ok, :xml, XmlAdapter.acl]
   end
 
   def perform_get_object
     s3o = S3Object.find_by(uri: @params[:s3_object_uri])
 
+    unless s3o && File.exist?(s3o.file.path)
+      return :ok, :xml, XmlAdapter.error_no_such_key(@params[:key])
+    end
+
     case @params[:request_method]
     when 'HEAD'
-      unless s3o && File.exist?(s3o.file.path)
-        return 404, :xml, XmlAdapter.error_no_such_key(@params[:s3_object_uri]
-                                                       .split('/')[1..-1].join('/'))
-      end
-      [nil, :head, s3o]
+      [:ok, :head, s3o]
     when 'GET'
-      unless s3o && File.exist?(s3o.file.path)
-        return 404, :xml, XmlAdapter.error_no_such_key(@params[:s3_object_uri]
-                                                       .split('/')[1..-1].join('/'))
-      end
-      [nil, :file, s3o]
+      [:ok, :file, s3o]
     else
       fail UnsupportedOperation
     end

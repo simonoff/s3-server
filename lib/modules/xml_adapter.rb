@@ -85,7 +85,7 @@ module XmlAdapter
       end
     end
 
-    def multipart_initialization(s3_object)
+    def s3_multipart_initialization(s3_object)
       ''.tap do |output|
         xml = Builder::XmlMarkup.new(target: output)
         xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
@@ -93,8 +93,21 @@ module XmlAdapter
           xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/') do |imur|
           imur.Bucket(s3_object.bucket.name)
           imur.Key(s3_object.key)
-          imur.ETag(s3_object.md5)
-          imur.UploadId('VXBsb2FkIElEIGZvciA2aWWpbmcncyBteS1tb3ZpZS5tMnRzIHVwbG9hZA')
+          imur.UploadId(s3_object.id.to_s)
+        end
+      end
+    end
+
+    def s3_multipart_completion(endpoint, s3_object)
+      ''.tap do |output|
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.CompleteMultipartUploadResult(xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/') do |pr|
+          pr.Location("http://#{endpoint}" \
+                      "/#{s3_object.bucket.name}/#{s3_object.key}")
+          pr.Bucket(s3_object.bucket.name)
+          pr.Key(s3_object.key)
+          pr.ETag(s3_object.md5)
         end
       end
     end
@@ -109,6 +122,18 @@ module XmlAdapter
           pr.Bucket(s3_object.bucket.name)
           pr.Key(s3_object.key)
           pr.ETag(s3_object.md5)
+        end
+      end
+    end
+
+    def created_bucket(bucket)
+      ''.tap do |output|
+        xml = Builder::XmlMarkup.new(target: output)
+        xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
+        xml.CreateBucketResponse(xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/') do |cbr1|
+          cbr1.CreateBucketResponse do |cbr2|
+            cbr2.Bucket(bucket.name)
+          end
         end
       end
     end

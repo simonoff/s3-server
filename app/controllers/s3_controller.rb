@@ -20,13 +20,22 @@ class S3Controller < ApplicationController
 
   def create
     RequestNormalizer.normalize_create(params, request)
-    render xml: PerformCreate.call(params, request), status: :created
+    status, render_type, data = PerformCreate.call(params, request)
+    render render_type => data, status: status
   end
 
   def update
     RequestNormalizer.normalize_update(params, request)
-    PerformUpdate.call(params)
-    render xml: '', status: 200
+    status, render_type, data = PerformUpdate.call(params)
+    case params[:s3_action_perform]
+    when :s3_multipart_upload
+      response.headers.tap do |hs|
+        hs['ETag'] = data
+      end
+      head status
+    else
+      render render_type => data, status: status
+    end
   end
 
   def destroy

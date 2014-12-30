@@ -1,15 +1,25 @@
 module RequestNormalizer
+  # S3 multipart upload:
+  # -       Initialization: POST /ObjectName?uploads
+  # -               Upload: PATCH /ObjectName?partNumber=PartNumber&uploadId=UploadId
+  # -   Completion (fetch): POST /ObjectName?uploadId=UploadId
+  #
+  # http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingRESTAPImpUpload.html
   class << self
     def normalize_create(params, request)
       path = request.path
       query = request.query_parameters
       elts = path.split('/')
 
-      params[:bucket] = parse_bucket_name(params)
-      params[:s3_object_uri] = rebuild_uri(params)
+      normalize_s3_params(params)
       case
       when elts.length > 3 && query.key?('uploads')
-        params[:s3_action_perform] = :upload_initialization
+        params[:s3_action_perform] = :s3_multipart_initialization
+        params[:content_type] = request.content_type || 'application/octet-stream'
+      when elts.length > 3 && query.key?('uploadId')
+        params[:s3_action_perform] = :s3_multipart_completion
+        normalize_s3_params(params)
+        params[:request_body] = request.body
       else
         params[:s3_action_perform] = :upload
         normalize_file_upload(params, request)
@@ -32,8 +42,7 @@ module RequestNormalizer
         params[:s3_action_perform] = :get_acl
       else
         params[:s3_action_perform] = :get_object
-        params[:bucket] = parse_bucket_name(params)
-        params[:s3_object_uri] = rebuild_uri(params)
+        normalize_s3_params(params)
         params[:request_method] = request.method
       end
     end
@@ -48,13 +57,17 @@ module RequestNormalizer
         fail UnsupportedOperation
       when elts.length < 3
         params[:s3_action_perform] = :create_bucket
+        params[:bucket] = parse_bucket_name(params)
       when query.key?('acl')
         params[:s3_action_perform] = :set_acl
+      when query.key?('uploadId') && query.key?('partNumber')
+        params[:s3_action_perform] = :s3_multipart_upload
+        normalize_s3_params(params)
+        params[:request_body] = request.body
       else
+        # singlepart file upload
         params[:s3_action_perform] = :store_object
-        params[:s3_object_uri] = rebuild_uri(params)
-        params[:bucket] = parse_bucket_name(params)
-        params[:key] = parse_key_name(params)
+        normalize_s3_params(params)
         normalize_file_upload(params, request)
       end
 
@@ -72,6 +85,9 @@ module RequestNormalizer
       when elts.length < 3
         params[:s3_action_perform] = :rm_bucket
         params[:rm_bucket_query] = query
+      when query.key?('uploadId')
+        params[:s3_action_perform] = :s3_multipart_abortion
+        params[:s3_object_uri] = rebuild_uri(params)
       else
         params[:s3_action_perform] = :rm_object
         params[:s3_object_uri] = rebuild_uri(params)
@@ -119,6 +135,12 @@ module RequestNormalizer
       params[:s3_action_perform] = :copy_object
     end
 
+    def normalize_s3_params(params)
+      params[:s3_object_uri] = rebuild_uri(params)
+      params[:bucket] = parse_bucket_name(params)
+      params[:key] = parse_key_name(params) unless params[:key]
+    end
+
     def parse_bucket_name(params)
       params[:path].split('/').first
     end
@@ -130,7 +152,7 @@ module RequestNormalizer
     def rebuild_uri(params)
       case
       when params[:format]
-        params[:s3_object_uri] = "#{params[:path]}/#{params[:format]}"
+        params[:s3_object_uri] = "#{params[:path]}.#{params[:format]}"
       when params[:key]
         params[:s3_object_uri] = "#{params[:path]}/#{params[:key]}"
       end

@@ -16,15 +16,42 @@ class PerformCreate
 
   private
 
-  def perform_upload_initialization
+  def perform_s3_multipart_initialization
     s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
     s3o.uri = @params[:s3_object_uri]
     s3o.bucket = handle_bucket
     s3o.key = @params[:key]
-    s3o.md5 = '144c9defac04969c7bfad8efaa8ea194'
+    s3o.content_type = @params[:content_type]
     s3o.save!
 
-    XmlAdapter.multipart_initialization(s3o)
+    [:ok, :xml, XmlAdapter.s3_multipart_initialization(s3o)]
+  end
+
+  def perform_s3_multipart_completion
+    dir = File.join('tmp', 'multiparts', "s3o_#{@params['uploadId']}")
+    parts = Hash.from_xml(@params[:request_body].read)['CompleteMultipartUpload']['Part']
+
+    # Fetch parts
+    parts.each do |part|
+      path = File.join(dir, "part_#{part['PartNumber']}.raw")
+      File.open(File.join(dir, 'complete.raw'), 'ab') do |final_file|
+        final_file << File.read(path)
+      end
+    end
+
+    s3o = S3Object.find(@params['uploadId'].to_s)
+    return :not_found, :xml, XmlAdapter.error_no_such_key(@params[:key]) unless s3o
+
+    s3o.file = File.open(File.join(dir, 'complete.raw'))
+    s3o.file.filename = @params[:key].split('/').last
+    s3o.size = File.size(s3o.file.path)
+    s3o.md5 = Digest::MD5.file(s3o.file.path).hexdigest
+    s3o.save!
+
+    # Remove tmp folder
+    FileUtils.rm_r(dir)
+
+    [:ok, :xml, XmlAdapter.s3_multipart_completion("#{@request.host}:#{@request.port}", s3o)]
   end
 
   def perform_upload
@@ -38,7 +65,7 @@ class PerformCreate
     s3o.md5 = Digest::MD5.file(s3o.file.path).hexdigest
     s3o.save!
 
-    XmlAdapter.uploaded_object("#{@request.host}:#{@request.port}", s3o)
+    [:created, :xml, XmlAdapter.uploaded_object("#{@request.host}:#{@request.port}", s3o)]
   end
 
   def handle_bucket

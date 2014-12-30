@@ -28,6 +28,15 @@ class PerformDestroy
     end
   end
 
+  def perform_s3_multipart_abortion
+    if (s3o = S3Object.find_by(uri: @params[:s3_object_uri]))
+      s3o.destroy
+    end
+    if Dir.exist?((dir = File.join('tmp', 'multiparts', "s3o_#{@params['uploadId']}")))
+      FileUtils.rm_r(dir)
+    end
+  end
+
   def remove_empty_directories
     until (empty_dirs = find_empty_directories).empty?
       empty_dirs.each   { |d| Dir.rmdir d }

@@ -16,19 +16,37 @@ class PerformUpdate
   private
 
   def perform_create_bucket
-    Bucket.create!(name: @params[:path]) unless Bucket.find_by(name: @params[:path])
+    Bucket.create!(name: @params[:bucket]) unless Bucket.find_by(name: @params[:bucket])
+    [:created, :xml, XmlAdapter.created_bucket(Bucket.find_by(name: @params[:bucket]))]
   end
 
   def perform_store_object
-    s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
-    s3o.uri = @params[:s3_object_uri]
-    s3o.file = @params[:file]
-    s3o.bucket = handle_bucket
-    s3o.key = @params[:key]
-    s3o.content_type = @params[:file].content_type
-    s3o.size = File.size(s3o.file.path)
-    s3o.md5 = Digest::MD5.file(s3o.file.path).hexdigest
-    s3o.save!
+    (S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new).tap do |s3o|
+      s3o.uri = @params[:s3_object_uri]
+      s3o.file = @params[:file]
+      s3o.bucket = handle_bucket
+      s3o.key = @params[:key]
+      s3o.content_type = @params[:file].content_type
+      s3o.size = File.size(s3o.file.path)
+      s3o.md5 = Digest::MD5.file(s3o.file.path).hexdigest
+      s3o.save!
+    end
+  end
+
+  def perform_s3_multipart_upload
+    unless S3Object.find(@params['uploadId'].to_s)
+      return :not_found, :xml, XmlAdapter.error_no_such_key(@params[:key])
+    end
+
+    dir = File.join('tmp', 'multiparts', "s3o_#{@params['uploadId']}")
+    FileUtils.mkdir_p(dir) unless File.directory?(dir)
+
+    path = File.join(dir, "part_#{@params['partNumber']}.raw")
+    File.open(path, 'wb') do |part|
+      part << @params[:request_body].read
+    end
+
+    [:ok, :xml, Digest::MD5.file(path).hexdigest]
   end
 
   def perform_copy
