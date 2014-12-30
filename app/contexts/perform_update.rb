@@ -20,17 +20,20 @@ class PerformUpdate
     [:created, :xml, XmlAdapter.created_bucket(Bucket.find_by(name: @params[:bucket]))]
   end
 
+  # For singlepart upload
+  # http://docs.aws.amazon.com/AmazonS3/latest/dev/UploadObjSingleOpREST.html
   def perform_store_object
-    (S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new).tap do |s3o|
-      s3o.uri = @params[:s3_object_uri]
-      s3o.file = @params[:file]
-      s3o.bucket = handle_bucket
-      s3o.key = @params[:key]
-      s3o.content_type = @params[:file].content_type
-      s3o.size = File.size(s3o.file.path)
-      s3o.md5 = Digest::MD5.file(s3o.file.path).hexdigest
-      s3o.save!
-    end
+    s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
+    s3o.uri = @params[:s3_object_uri]
+    s3o.file = @params[:file]
+    s3o.bucket = handle_bucket
+    s3o.key = @params[:key]
+    s3o.content_type = @params[:file].content_type
+    s3o.size = File.size(s3o.file.path)
+    s3o.md5 = Digest::MD5.file(s3o.file.path).hexdigest
+    s3o.save!
+
+    [:ok, :head, s3o.md5]
   end
 
   def perform_s3_multipart_upload
@@ -46,7 +49,7 @@ class PerformUpdate
       part << @params[:request_body].read
     end
 
-    [:ok, :xml, Digest::MD5.file(path).hexdigest]
+    [:ok, :head, Digest::MD5.file(path).hexdigest]
   end
 
   def perform_copy

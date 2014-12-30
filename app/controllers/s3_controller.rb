@@ -27,8 +27,8 @@ class S3Controller < ApplicationController
   def update
     RequestNormalizer.normalize_update(params, request)
     status, render_type, data = PerformUpdate.call(params)
-    case params[:s3_action_perform]
-    when :s3_multipart_upload
+    case render_type
+    when :head
       response.headers.tap do |hs|
         hs['ETag'] = data
       end
