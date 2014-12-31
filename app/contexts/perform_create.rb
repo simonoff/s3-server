@@ -16,6 +16,7 @@ class PerformCreate
 
   private
 
+  # http://docs.aws.amazon.com/AmazonS3/latest/API/mpUploadInitiate.html
   def perform_s3_multipart_initialization
     s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
     s3o.uri = @params[:s3_object_uri]
@@ -27,6 +28,7 @@ class PerformCreate
     [:ok, :xml, XmlAdapter.s3_multipart_initialization(s3o)]
   end
 
+  # http://docs.aws.amazon.com/AmazonS3/latest/API/mpUploadComplete.html
   def perform_s3_multipart_completion
     dir = File.join('tmp', 'multiparts', "s3o_#{@params['uploadId']}")
     parts = Hash.from_xml(@params[:request_body].read)['CompleteMultipartUpload']['Part']
@@ -54,7 +56,8 @@ class PerformCreate
     [:ok, :xml, XmlAdapter.s3_multipart_completion("#{@request.host}:#{@request.port}", s3o)]
   end
 
-  def perform_upload
+  # Support cURL multipart upload (or another tools [HTTMultiParty, etc.]
+  def perform_multipart_upload
     s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
     s3o.uri = @params[:s3_object_uri]
     s3o.file = @params[:file]

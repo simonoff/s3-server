@@ -28,6 +28,7 @@ class PerformDestroy
     end
   end
 
+  # http://docs.aws.amazon.com/AmazonS3/latest/API/mpUploadAbort.html
   def perform_s3_multipart_abortion
     if (s3o = S3Object.find_by(uri: @params[:s3_object_uri]))
       s3o.destroy

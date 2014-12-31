@@ -20,9 +20,8 @@ class PerformUpdate
     [:created, :xml, XmlAdapter.created_bucket(Bucket.find_by(name: @params[:bucket]))]
   end
 
-  # For singlepart upload
   # http://docs.aws.amazon.com/AmazonS3/latest/dev/UploadObjSingleOpREST.html
-  def perform_store_object
+  def perform_singlepart_upload
     s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
     s3o.uri = @params[:s3_object_uri]
     s3o.file = @params[:file]
@@ -36,6 +35,7 @@ class PerformUpdate
     [:ok, :head, s3o.md5]
   end
 
+  # http://docs.aws.amazon.com/AmazonS3/latest/API/mpUploadUploadPart.html
   def perform_s3_multipart_upload
     unless S3Object.find(@params['uploadId'].to_s)
       return :not_found, :xml, XmlAdapter.error_no_such_key(@params[:key])
@@ -52,8 +52,22 @@ class PerformUpdate
     [:ok, :head, Digest::MD5.file(path).hexdigest]
   end
 
-  def perform_copy
-    fail 'NotImplemetedYet'
+  # http://docs.aws.amazon.com/AmazonS3/latest/dev/CopyingObjectUsingREST.html
+  def perform_copy_object
+    src_s3o = S3Object.find_by(uri: @params[:src_s3_object_uri])
+
+    s3o = S3Object.find_by(uri: @params[:s3_object_uri]) || S3Object.new
+    s3o.uri = @params[:s3_object_uri]
+    s3o.file = File.open(src_s3o.file.path)
+    s3o.file.filename = @params[:key].split('/').last
+    s3o.bucket = handle_bucket
+    s3o.key = @params[:key]
+    s3o.content_type = src_s3o.content_type
+    s3o.size = File.size(s3o.file.path)
+    s3o.md5 = Digest::MD5.file(s3o.file.path).hexdigest
+    s3o.save!
+
+    [:ok, :xml, XmlAdapter.copy_object_result(s3o)]
   end
 
   private

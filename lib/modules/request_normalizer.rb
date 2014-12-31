@@ -65,8 +65,7 @@ module RequestNormalizer
         normalize_s3_params(params)
         params[:request_body] = request.body
       else
-        # singlepart file upload
-        params[:s3_action_perform] = :store_object
+        params[:s3_action_perform] = :singlepart_upload
         normalize_s3_params(params)
         normalize_file_upload(params, request)
       end
@@ -119,6 +118,7 @@ module RequestNormalizer
       )
     end
 
+    # cURL multipart upload (or another tools)
     def normalize_multipart_upload(params)
       # Change stored filename
       fname = params[:key].split('/').last
@@ -126,12 +126,13 @@ module RequestNormalizer
     end
 
     def normalize_copy_source(params, copy_source)
-      return if copy_source.nil? || copy_source.size != 1
-      src_elts = copy_source.first.split('/')
-      root_offset = src_elts.firts.empty? ? 1 : 0
+      return if copy_source.blank?
+      src_elts = copy_source.split('/')
+      root_offset = src_elts.first.empty? ? 1 : 0
 
       params[:src_bucket] = src_elts[root_offset]
-      params[:src_object] = src_elts[1 + root_offset, -1].join('/')
+      params[:src_key] = src_elts[(1 + root_offset)..-1].join('/')
+      params[:src_s3_object_uri] = "#{params[:src_bucket]}/#{params[:src_key]}"
       params[:s3_action_perform] = :copy_object
     end
 

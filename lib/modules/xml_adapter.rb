@@ -239,7 +239,7 @@ module XmlAdapter
         xml = Builder::XmlMarkup.new(target: output)
         xml.instruct!(:xml, version: '1.0', encoding: 'UTF-8')
         xml.CopyObjectResult do |result|
-          result.LastModified(object.modified_date)
+          result.LastModified(object.updated_at)
           result.ETag("\"#{object.md5}\"")
         end
       end
