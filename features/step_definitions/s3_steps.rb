@@ -1,9 +1,25 @@
-When(/^I upload a tiny file to \/(\S+)$/) do |uri|
-  FileGenerator.with_lorem_file do |file|
+When(/^I upload a (\S+) file to \/(\S+)$/) do |size, uri|
+  FileGenerator.with_lorem_file(convert_size(size)) do |file|
     S3Client.s3_params = S3Manager.parse_s3_params(uri)
     S3Client.expected_size = file.size
 
     S3Manager.upload(file)
+
+    S3Client.actual_size = S3Manager.object_size
+  end
+end
+
+When(/^I upload a (\S+) file to \/(\S+) with curl$/) do |size, uri|
+  FileGenerator.with_lorem_file(convert_size(size)) do |file|
+    S3Client.s3_params = S3Manager.parse_s3_params(uri)
+    S3Client.expected_size = file.size
+
+    `curl -s -X POST \
+      -F "Content-Type=multipart/form-data" \
+      -F "key=#{S3Client.s3_params[1]}" \
+      -F "success_action_status=201" \
+      -F "file=@#{file.path}" \
+      -i http://localhost:3000/#{S3Client.s3_params[0]}`
 
     S3Client.actual_size = S3Manager.object_size
   end
@@ -33,10 +49,13 @@ Then(/^I can verify the size$/) do
   expect(S3Client.actual_size).to eq(S3Client.expected_size)
 end
 
-def save_s3_params(bucket, key)
-  S3Client.s3_params = [bucket, key]
-end
-
-def save_content_legnth(length)
-  S3Client.content_length = length
+def convert_size(size)
+  case size
+  when 'tiny'
+    size = 1
+  when 'large'
+    size = 20
+  else
+    fail 'Invalid size parameter'
+  end
 end
