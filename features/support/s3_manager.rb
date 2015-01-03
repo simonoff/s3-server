@@ -35,8 +35,8 @@ class S3Manager
       object(*S3Client.s3_params).exists?
     end
 
-    def copy(src_bucket, src_key, dst_bucket, dst_key)
-      object(src_bucket, src_key).copy_to(create_object(dst_bucket, dst_key))
+    def copy(src_s3_params)
+      object(*src_s3_params).copy_to(create_object(*S3Client.s3_params))
     end
 
     def copy_from_object(s3_object, dst_bucket, dst_key)

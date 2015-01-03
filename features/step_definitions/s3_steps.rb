@@ -37,6 +37,19 @@ When(/^I download a file from \/(\S+)$/) do |uri|
   end
 end
 
+When(/^I copy an existing object to \/(\S+)$/) do |uri|
+  # src (Given clause)
+  src_s3_params = S3Client.s3_params
+  S3Client.expected_size = S3Manager.object_size
+
+  # dst (When clause)
+  S3Client.s3_params = S3Manager.parse_s3_params(uri)
+
+  S3Manager.copy(src_s3_params)
+
+  S3Client.actual_size = S3Manager.object_size
+end
+
 Then(/^I can verify the success of the upload$/) do
   expect(S3Manager.object_exists?).to be true
 end
@@ -52,9 +65,9 @@ end
 def convert_size(size)
   case size
   when 'tiny'
-    size = 1
+    1
   when 'large'
-    size = 20
+    20
   else
     fail 'Invalid size parameter'
   end
