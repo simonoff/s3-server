@@ -29,10 +29,16 @@ gem 'carrierwave', '0.10.0'
 group :test, :development do
   gem 'jazz_hands', github: 'nixme/jazz_hands', branch: 'bring-your-own-debugger'
   gem 'pry-byebug'
-  gem 'rspec-rails', '2.14'
+  gem 'rspec-rails', '3.1.0'
 end
 
 group :development do
   gem 'spring'
   gem 'rubocop', '0.20.0'
+end
+
+group :test do
+  gem 'cucumber-rails', '1.4.2'
+  gem 'faker', '1.4.3'
+  gem 'aws-sdk'
 end
