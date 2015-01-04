@@ -151,6 +151,8 @@ GEM
     pry-stack_explorer (0.4.9.1)
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
+    puma (2.9.1)
+      rack (>= 1.1, < 2.0)
     rack (1.5.2)
     rack-cors (0.2.9)
     rack-test (0.6.2)
@@ -246,6 +248,7 @@ DEPENDENCIES
   jbuilder (~> 2.0)
   jquery-rails
   pry-byebug
+  puma (= 2.9.1)
   rack-cors (= 0.2.9)
   rails (= 4.1.8)
   rspec-rails (= 3.1.0)
