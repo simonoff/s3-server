@@ -42,3 +42,7 @@ group :test do
   gem 'faker', '1.4.3'
   gem 'aws-sdk'
 end
+
+group :production do
+  gem 'puma', '2.9.1'
+end

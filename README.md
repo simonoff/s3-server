@@ -9,6 +9,11 @@ S3-server doesn't support all of the S3 command set, but the basic ones like put
 $ bundle exec rails server -p 10001
 ```
 
+- Running with docker
+```bash
+$ docker run -p 10001:10001 -d mdouchement/s3-server
+```
+
 ## Connecting to S3-server
 This application is mainly tested with the [AWS Ruby SDK](https://github.com/aws/aws-sdk-ruby).
 
