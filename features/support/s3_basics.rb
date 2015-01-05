@@ -14,8 +14,11 @@ module S3Basicis
     end
 
     def object(bucket, key)
-      bucket = s3.buckets["#{ bucket }"]
-      bucket.objects["#{ key }"]
+      bucket(bucket).objects["#{ key }"]
+    end
+
+    def bucket(bucket)
+      s3.buckets["#{ bucket }"]
     end
 
     def s3

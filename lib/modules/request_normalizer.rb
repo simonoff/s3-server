@@ -21,7 +21,7 @@ module RequestNormalizer
         normalize_s3_params(params)
         params[:request_body] = request.body
       else
-        params[:s3_action_perform] = :upload
+        params[:s3_action_perform] = :multipart_upload
         normalize_file_upload(params, request)
       end
     end

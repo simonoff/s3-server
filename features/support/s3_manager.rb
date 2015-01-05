@@ -50,5 +50,9 @@ class S3Manager
     def object_size_in_mb
       object_size(*S3Client.s3_params) / 1_048_576
     end
+
+    def delete_object
+      object(*S3Client.s3_params).delete
+    end
   end
 end

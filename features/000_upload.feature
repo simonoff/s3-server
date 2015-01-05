@@ -5,3 +5,4 @@ Feature: Upload a tiny file (singlepart)
     When I upload a tiny file to /cucumber_bucket/cucumber_key/lorem.txt
     Then I can verify the success of the upload
     Then I can verify the size
+    Then I remove the object for the next test

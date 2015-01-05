@@ -14,12 +14,11 @@ When(/^I upload a (\S+) file to \/(\S+) with curl$/) do |size, uri|
     S3Client.s3_params = S3Manager.parse_s3_params(uri)
     S3Client.expected_size = file.size
 
-    `curl -s -X POST \
+    `curl -s -X POST -i http://localhost:10001/#{S3Client.s3_params[0]} \
       -F "Content-Type=multipart/form-data" \
       -F "key=#{S3Client.s3_params[1]}" \
       -F "success_action_status=201" \
-      -F "file=@#{file.path}" \
-      -i http://localhost:3000/#{S3Client.s3_params[0]}`
+      -F "file=@#{file.path}"`
 
     S3Client.actual_size = S3Manager.object_size
   end
@@ -60,6 +59,10 @@ end
 
 Then(/^I can verify the size$/) do
   expect(S3Client.actual_size).to eq(S3Client.expected_size)
+end
+
+Then(/^I remove the object for the next test$/) do
+  S3Manager.delete_object
 end
 
 def convert_size(size)
