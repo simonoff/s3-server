@@ -120,9 +120,16 @@ module RequestNormalizer
 
     # cURL multipart upload (or another tools)
     def normalize_multipart_upload(params)
-      # Change stored filename
       fname = params[:key].split('/').last
-      params[:file].original_filename = fname
+      if fname == '${filename}'
+        # Can't change original name. Just rename key
+        params[:key].sub!('${filename}', params[:file].original_filename)
+        # Rebuild s3_uri with new key
+        rebuild_uri(params)
+      else
+        # Change stored filename for more flexibility
+        params[:file].original_filename = fname
+      end
     end
 
     def normalize_copy_source(params, copy_source)
