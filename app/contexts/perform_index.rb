@@ -36,7 +36,7 @@ class PerformIndex
     s3o = S3Object.find_by(uri: @params[:s3_object_uri])
 
     unless s3o && File.exist?(s3o.file.path)
-      return :ok, :xml, XmlAdapter.error_no_such_key(@params[:key])
+      return :not_found, :xml, XmlAdapter.error_no_such_key(@params[:key])
     end
 
     case @params[:request_method]
