@@ -22,7 +22,7 @@ test: &test
 
 production:
   <<: *default
-  database: db/production.sqlite3
+  database: <%= ENV['DATABASE_PATH'] %>
 
 cucumber:
   <<: *test

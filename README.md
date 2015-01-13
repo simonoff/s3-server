@@ -10,6 +10,7 @@ $ bundle exec rails server -p 10001
 ```
 
 - Running with docker
+
 ```bash
 $ docker run -p 10001:10001 -d mdouchement/s3-server
 ```
