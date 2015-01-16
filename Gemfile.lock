@@ -251,7 +251,6 @@ DEPENDENCIES
   puma (= 2.9.1)
   rack-cors (= 0.2.9)
   rails (= 4.1.8)
-  rake
   rspec-rails (= 3.1.0)
   rubocop (= 0.20.0)
   sass-rails (~> 4.0.3)

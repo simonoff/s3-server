@@ -14,21 +14,18 @@ module S3Basicis
     end
 
     def object(bucket, key)
-      bucket(bucket).objects["#{ key }"]
+      s3.buckets["#{bucket}"].objects["#{key}"]
     end
 
     def bucket(bucket)
-      s3.buckets["#{ bucket }"]
+      s3.buckets["#{bucket}"]
     end
 
     def s3
       ::AWS::S3.new({
-        access_key_id: '',
-        secret_access_key: '',
+        access_key_id: '', secret_access_key: '',
         s3_endpoint: 'localhost:10001',
-        s3_force_path_style: true,
-        use_ssl: false
-      }.merge!(@opts))
+        s3_force_path_style: true, use_ssl: false })
     end
   end
 end

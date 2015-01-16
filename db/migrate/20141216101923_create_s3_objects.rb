@@ -1,7 +1,7 @@
 class CreateS3Objects < ActiveRecord::Migration
   def change
     create_table :s3_objects do |t|
-      t.string :uri
+      t.string :uri, uniqueness: true
       t.string :key
       t.integer :size
       t.string :md5
