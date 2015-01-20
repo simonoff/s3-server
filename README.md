@@ -22,7 +22,7 @@ Here is a running list of [supported clients](https://github.com/mdouchement/s3-
 
 ## Development
 ```bash
-$ rm -r storage ; rm db/development.sqlite3 ; bundle exec rake db:migrate
+$ bundle exec rake db:migrate
 $ bundle exec rails s -p 10001
 ```
 
