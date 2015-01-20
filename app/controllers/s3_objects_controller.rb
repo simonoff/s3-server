@@ -58,7 +58,7 @@ class S3ObjectsController < ApplicationController
   def multipart_upload
     @s3_object = S3Object.find_by(uri: uri) || S3Object.new
 
-    if filename.eql? '${filename}'
+    if params[:key].split('/').last.eql? '${filename}'
       params[:key].sub!('${filename}', file.original_filename)
     else
       file.original_filename = params[:key].split('/').last
@@ -69,7 +69,7 @@ class S3ObjectsController < ApplicationController
       file: file, content_type: file.content_type,
       size: File.size(file.path), md5: Digest::MD5.file(file.path).hexdigest)
 
-    render 'multipart_upload.xml.builder'
+    render 'multipart_upload.xml.builder', status: :created
   end
 
   def singlepart_upload
