@@ -44,7 +44,6 @@ class S3ObjectsController < ApplicationController
     render 'multipart_completion.xml.builder'
   end
 
-  # patch upload
   def part_upload
     @s3_object = S3Object.find(request.query_parameters['uploadId'])
     PartUpload.call(@s3_object, request.query_parameters['partNumber'], request.body.read)
