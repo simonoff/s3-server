@@ -21,6 +21,12 @@ $ docker run -p 10001:10001 -d predicsis/s3-server
 $ docker run -p 10001:10001 -v /home/user/s3-server/storage:/data/storage -v /home/user/s3-server/db:/data/db -d predicsis/s3-server
 ```
 
+- As service
+
+```bash
+$ docker run --restart=always --name=s3_server -p 10001:10001 -v /home/user/s3-server/storage:/data/storage -v /home/user/s3-server/db:/data/db -d predicsis/s3-server
+```
+
 ## Connecting to S3-server
 This application is mainly tested with the [AWS Ruby SDK](https://github.com/aws/aws-sdk-ruby).
 
