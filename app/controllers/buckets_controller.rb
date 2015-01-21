@@ -6,7 +6,8 @@ class BucketsController < ApplicationController
   end
 
   def create
-    @bucket = Bucket.create!(name: params[:bucket_name], user: @user)
+    @bucket = Bucket.find_by(name: params[:bucket_name]) ||
+      Bucket.create!(name: params[:bucket_name], user: @user)
   end
 
   def show
