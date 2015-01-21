@@ -3,16 +3,19 @@ class BucketsController < ApplicationController
 
   def index
     @buckets = Bucket.all
+    render 'index.xml.builder'
   end
 
   def create
     @bucket = Bucket.find_by(name: params[:bucket_name]) ||
       Bucket.create!(name: params[:bucket_name], user: @user)
+    render 'create.xml.builder'
   end
 
   def show
     @bucket = Bucket.find_by(name: params[:bucket_name]) ||
       Bucket.create!(name: params[:bucket_name], user: User.create!)
+    render 'show.xml.builder'
   end
 
   def destroy
