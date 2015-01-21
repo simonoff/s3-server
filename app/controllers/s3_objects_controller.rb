@@ -3,6 +3,7 @@ class S3ObjectsController < ApplicationController
 
   def index
     @s3_objects = @bucket.s3_objects
+    render 'index.xml.builder'
   end
 
   def create
