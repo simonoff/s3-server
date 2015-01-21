@@ -1,5 +1,5 @@
 FROM ruby:2.1.5
-MAINTAINER mdocuhement
+MAINTAINER mdouchement
 
 RUN mkdir -p /usr/src/app
 RUN mkdir -p /data/storage
@@ -28,4 +28,4 @@ RUN bundle exec rake db:migrate
 VOLUME /data/storage
 VOLUME /data/db
 EXPOSE 10001
-CMD ["bundle", "exec", "rails", "server", "-p", "10001"]
+CMD bundle exec rake db:migrate && bundle exec rails s -p 10001

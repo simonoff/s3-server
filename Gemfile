@@ -44,5 +44,6 @@ group :test do
 end
 
 group :production do
+  gem 'rake'
   gem 'puma', '2.9.1'
 end
