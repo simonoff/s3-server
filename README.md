@@ -12,7 +12,13 @@ $ bundle exec rails server -p 10001
 - Running with docker
 
 ```bash
-$ docker run -p 10001:10001 -d mdouchement/s3-server
+$ docker run -p 10001:10001 -d predicsis/s3-server
+```
+
+- Running with docker (with volumes)
+
+```bash
+$ docker run -p 10001:10001 -v /home/user/s3-server/storage:/data/storage -v /home/user/s3-server/db:/data/db -d predicsis/s3-server
 ```
 
 ## Connecting to S3-server
