@@ -17,4 +17,12 @@ class FileUploader < CarrierWave::Uploader::Base
   def cache_dir
     File.join('tmp', 'uploads')
   end
+
+  def move_to_cache
+    true
+  end
+
+  def move_to_store
+    true
+  end
 end

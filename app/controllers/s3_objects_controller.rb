@@ -46,12 +46,10 @@ class S3ObjectsController < ApplicationController
   end
 
   def part_upload
-    @s3_object = S3Object.find(request.query_parameters['uploadId'])
-    PartUpload.call(@s3_object, request.query_parameters['partNumber'], request.body.read)
-    @s3_object.save!
-
+    etag = PartUpload.call(request.query_parameters['uploadId'],
+                           request.query_parameters['partNumber'], request.body.read)
     response.headers.tap do |hs|
-      hs['ETag'] = @s3_object.md5
+      hs['ETag'] = etag
     end
     head :ok
   end
