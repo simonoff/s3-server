@@ -40,6 +40,6 @@ class BucketsController < ApplicationController
   private
 
   def find_user
-    @user = User.create!
+    @user = User.first || User.create!
   end
 end

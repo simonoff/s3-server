@@ -7,6 +7,7 @@ RUN mkdir -p /data/db
 WORKDIR /usr/src/app
 
 ENV RAILS_ENV production
+ENV RACK_ENV production
 ENV SECRET_KEY_BASE 9489b3eee4eccf317ed77407553e8adc97baca7c74dc7ee33cd93e4c8b69477eea66eaedeb18af0be2679887c7c69c0a28c0fded0a71ea472a8c4laalal19cb
 ENV STORAGE_DIRECTORY /data/storage
 ENV DATABASE_PATH /data/db/production.sqlite3
@@ -28,4 +29,4 @@ RUN bundle exec rake db:migrate
 VOLUME /data/storage
 VOLUME /data/db
 EXPOSE 10001
-CMD bundle exec rake db:migrate && bundle exec rails s -p 10001
+CMD bundle exec rake db:migrate && bundle exec puma -t 2:5 -p 10001
