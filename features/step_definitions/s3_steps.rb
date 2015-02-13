@@ -71,6 +71,7 @@ Then(/^I remove the object\(s\) for the next test$/) do
   S3Client.each_client do |id|
     S3Manager[id].delete_object
   end
+  S3Client.wipe
 end
 
 def convert_size(size)
