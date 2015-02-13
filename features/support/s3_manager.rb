@@ -2,6 +2,11 @@ class S3Manager
   include S3Basicis
 
   class << self
+    def [](client_id)
+      @id = client_id
+      self
+    end
+
     # return [bucket, key]
     def parse_s3_params(uri)
       elts = uri.split('/')
@@ -11,7 +16,7 @@ class S3Manager
     def download(output, opts = {})
       @opts = opts
 
-      object(*S3Client.s3_params).read do |chunk|
+      object(*S3Client[@id].s3_params).read do |chunk|
         output << chunk
       end
     end
@@ -19,24 +24,24 @@ class S3Manager
     def upload(file, opts = {})
       @opts = opts
 
-      create_object(*S3Client.s3_params).write(file: file.path)
+      create_object(*S3Client[@id].s3_params).write(file: file.path)
     end
 
     # /!\ Does not work !
     def upload_multipart(file, opts = {})
       @opts = opts
 
-      create_object(*S3Client.s3_params).write(content_length: file.size) do |buffer, bytes|
+      create_object(*S3Client[@id].s3_params).write(content_length: file.size) do |buffer, bytes|
         buffer.write(file.read(bytes))
       end
     end
 
     def object_exists?
-      object(*S3Client.s3_params).exists?
+      object(*S3Client[@id].s3_params).exists?
     end
 
     def copy(src_s3_params)
-      object(*src_s3_params).copy_to(create_object(*S3Client.s3_params))
+      object(*src_s3_params).copy_to(create_object(*S3Client[@id].s3_params))
     end
 
     def copy_from_object(s3_object, dst_bucket, dst_key)
@@ -44,15 +49,15 @@ class S3Manager
     end
 
     def object_size
-      object(*S3Client.s3_params).content_length
+      object(*S3Client[@id].s3_params).content_length
     end
 
     def object_size_in_mb
-      object_size(*S3Client.s3_params) / 1_048_576
+      object_size(*S3Client[@id].s3_params) / 1_048_576
     end
 
     def delete_object
-      object(*S3Client.s3_params).delete
+      object(*S3Client[@id].s3_params).delete
     end
   end
 end
