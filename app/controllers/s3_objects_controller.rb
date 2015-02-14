@@ -1,5 +1,6 @@
 class S3ObjectsController < ApplicationController
   include ActionController::Live
+  include CleanerManager
 
   before_action :find_bucket, except: :part_upload
 
@@ -41,6 +42,7 @@ class S3ObjectsController < ApplicationController
 
   def multipart_completion
     @s3_object = S3Object.find(request.query_parameters['uploadId'])
+
     mp = Thread.new { MultipartCompletion.call(@s3_object, request.body.read) }
 
     until mp.alive?
@@ -53,9 +55,9 @@ class S3ObjectsController < ApplicationController
     @s3_object.file.filename = filename
     @s3_object.save
 
-    render 'multipart_completion.xml.builder'
-  ensure
-    response.stream.close
+  render 'multipart_completion.xml.builder'
+  #ensure
+    #response.stream.close
   end
 
   def part_upload
