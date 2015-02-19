@@ -1,5 +1,8 @@
 class S3ObjectsController < ApplicationController
-  before_action :find_bucket
+  include ActionController::Live
+  include CleanerManager
+
+  before_action :find_bucket, except: :part_upload
 
   def index
     @s3_objects = @bucket.s3_objects
@@ -9,7 +12,7 @@ class S3ObjectsController < ApplicationController
   def create
     @s3_object = S3Object.find_by(uri: uri) || S3Object.new
     @s3_object.update_attributes(
-      bucket: @bucket, uri: uri, key: key,
+      bucket: @bucket, uri: uri, key: key, md5: nil, size: nil, file: nil,
       content_type: request.content_type || 'application/octet-stream')
     render 'create.xml.builder'
   end
@@ -32,17 +35,32 @@ class S3ObjectsController < ApplicationController
       end
     else
       @error = Error.create(code: 'NoSuchKey', resource: 's3_object',
-                            message: 'Thespecified key does not exist')
+                            message: 'The specified key does not exist')
       render 'errors/show.xml.builder', status: :not_found
     end
   end
 
   def multipart_completion
     @s3_object = S3Object.find(request.query_parameters['uploadId'])
-    MultipartCompletion.call(@s3_object, request.body.read)
-    @s3_object.file.filename = filename
-    @s3_object.save
-    render 'multipart_completion.xml.builder'
+
+    mp = Thread.new do
+      MultipartCompletion.call(@s3_object, request.body.read)
+      @s3_object.file.filename = filename
+      @s3_object.save
+    end
+    mp.abort_on_exception = true
+
+    response.headers['Content-Type'] = 'text/event-stream'
+    while mp.alive?
+      # Periodically sends whitespace characters to keep the connection from timing out
+      response.stream.write ' '
+      sleep(5)
+    end
+    mp.join # Ensure multipart completion is finished
+
+    template = Tilt.new('app/views/s3_objects/multipart_completion.xml.builder')
+    response.stream.write template.render(self)
+    response.stream.close
   end
 
   def part_upload
@@ -64,7 +82,7 @@ class S3ObjectsController < ApplicationController
     end
 
     @s3_object.update_attributes(
-      uri: @bucket.name + '/' + params[:key], bucket: @bucket, key: params[:key],
+      uri: "#{@bucket.name}/#{params[:key]}", bucket: @bucket, key: params[:key],
       file: file, content_type: file.content_type,
       size: File.size(file.path), md5: Digest::MD5.file(file.path).hexdigest)
 

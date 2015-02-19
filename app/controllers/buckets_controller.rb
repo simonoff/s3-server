@@ -1,4 +1,6 @@
 class BucketsController < ApplicationController
+  include CleanerManager
+
   before_action :find_user
 
   def index
