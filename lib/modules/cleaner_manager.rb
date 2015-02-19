@@ -9,6 +9,7 @@ module CleanerManager
   def remove_tmp
     suppress(Errno::ENOENT) do
       FileUtils.rm_r(File.join '.', 'public', 'tmp')
+      FileUtils.rm_r(CopyObject::TMP_COPY_DIR)
     end
   end
 
