@@ -80,7 +80,6 @@ def convert_size(size)
     1
   when 'large'
     20
-    # 4_000
   else
     fail 'Invalid size parameter'
   end

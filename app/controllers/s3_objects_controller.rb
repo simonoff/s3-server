@@ -43,21 +43,24 @@ class S3ObjectsController < ApplicationController
   def multipart_completion
     @s3_object = S3Object.find(request.query_parameters['uploadId'])
 
-    mp = Thread.new { MultipartCompletion.call(@s3_object, request.body.read) }
+    mp = Thread.new do
+      MultipartCompletion.call(@s3_object, request.body.read)
+      @s3_object.file.filename = filename
+      @s3_object.save
+    end
+    mp.abort_on_exception = true
 
-    until mp.alive?
+    response.headers['Content-Type'] = 'text/event-stream'
+    while mp.alive?
       # Periodically sends whitespace characters to keep the connection from timing out
       response.stream.write ' '
-      sleep(1)
+      sleep(5)
     end
     mp.join # Ensure multipart completion is finished
 
-    @s3_object.file.filename = filename
-    @s3_object.save
-
-  render 'multipart_completion.xml.builder'
-  #ensure
-    #response.stream.close
+    template = Tilt.new('app/views/s3_objects/multipart_completion.xml.builder')
+    response.stream.write template.render(self)
+    response.stream.close
   end
 
   def part_upload

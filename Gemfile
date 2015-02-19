@@ -5,6 +5,7 @@ gem 'rails', '4.1.8'
 gem 'sqlite3'
 gem 'rack-cors', '0.2.9', require: 'rack/cors'
 gem 'carrierwave', '0.10.0'
+gem 'tilt', '1.4.1'
 
 group :test, :development do
   gem 'jazz_hands', github: 'nixme/jazz_hands', branch: 'bring-your-own-debugger'

@@ -23,5 +23,7 @@ module ErrorManager
         end
     @error = e[:error]
     render 'errors/show.xml.builder', status: e[:status]
+  ensure
+    response.stream.close
   end
 end
