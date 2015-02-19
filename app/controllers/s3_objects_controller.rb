@@ -111,10 +111,24 @@ class S3ObjectsController < ApplicationController
       src_bucket = src_elts[root_offset]
       src_key = src_elts[(1 + root_offset)..-1].join('/')
       src_uri = src_bucket + '/' + src_key
-      @src_s3_object = S3Object.find_by(uri: src_uri)
-      @s3_object = CopyObject.call(@src_s3_object, uri, filename, @bucket, key)
 
-      render 'copy.xml.builder'
+      cp = Thread.new do
+        @src_s3_object = S3Object.find_by(uri: src_uri)
+        @s3_object = CopyObject.call(@src_s3_object, uri, filename, @bucket, key)
+      end
+      cp.abort_on_exception = true
+
+      response.headers['Content-Type'] = 'text/event-stream'
+      while cp.alive?
+        # Periodically sends whitespace characters to keep the connection from timing out
+        response.stream.write ' '
+        sleep(5)
+      end
+      cp.join # Ensure object copy is finished
+
+      template = Tilt.new('app/views/s3_objects/copy.xml.builder')
+      response.stream.write template.render(self)
+      response.stream.close
     end
   end
 
