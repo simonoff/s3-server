@@ -44,9 +44,11 @@ class S3ObjectsController < ApplicationController
     @s3_object = S3Object.find(request.query_parameters['uploadId'])
 
     mp = Thread.new do
-      MultipartCompletion.call(@s3_object, request.body.read)
-      @s3_object.file.filename = filename
-      @s3_object.save
+      ActiveRecord::Base.connection_pool.with_connection do
+        MultipartCompletion.call(@s3_object, request.body.read)
+        @s3_object.file.filename = filename
+        @s3_object.save
+      end
     end
     mp.abort_on_exception = true
 
@@ -113,8 +115,10 @@ class S3ObjectsController < ApplicationController
       src_uri = src_bucket + '/' + src_key
 
       cp = Thread.new do
-        @src_s3_object = S3Object.find_by(uri: src_uri)
-        @s3_object = CopyObject.call(@src_s3_object, uri, filename, @bucket, key)
+        ActiveRecord::Base.connection_pool.with_connection do
+          @src_s3_object = S3Object.find_by(uri: src_uri)
+          @s3_object = CopyObject.call(@src_s3_object, uri, filename, @bucket, key)
+        end
       end
       cp.abort_on_exception = true
 
