@@ -13,40 +13,40 @@
 
 ActiveRecord::Schema.define(version: 20150116081901) do
 
-  create_table "acls", force: true do |t|
-    t.string  "name",       default: "You"
-    t.string  "permission", default: "FULL_CONTROL"
+  create_table "acls", force: :cascade do |t|
+    t.string  "name",       limit: 255, default: "You"
+    t.string  "permission", limit: 255, default: "FULL_CONTROL"
     t.integer "bucket_id"
   end
 
-  create_table "buckets", force: true do |t|
-    t.string   "name"
+  create_table "buckets", force: :cascade do |t|
+    t.string   "name",       limit: 255
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "errors", force: true do |t|
-    t.string  "code"
-    t.string  "message"
-    t.string  "resource"
-    t.integer "request_id", default: 1
+  create_table "errors", force: :cascade do |t|
+    t.string  "code",       limit: 255
+    t.string  "message",    limit: 255
+    t.string  "resource",   limit: 255
+    t.integer "request_id",             default: 1
   end
 
-  create_table "s3_objects", force: true do |t|
-    t.string   "uri"
-    t.string   "key"
+  create_table "s3_objects", force: :cascade do |t|
+    t.string   "uri",          limit: 255
+    t.string   "key",          limit: 255
     t.integer  "size"
-    t.string   "md5"
-    t.string   "content_type"
-    t.string   "file"
+    t.string   "md5",          limit: 255
+    t.string   "content_type", limit: 255
+    t.string   "file",         limit: 255
     t.integer  "bucket_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "users", force: true do |t|
-    t.string "name", default: "S3-server"
+  create_table "users", force: :cascade do |t|
+    t.string "name", limit: 255, default: "S3-server"
   end
 
 end

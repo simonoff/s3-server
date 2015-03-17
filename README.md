@@ -27,6 +27,29 @@ $ docker run -p 10001:10001 -v /home/user/s3-server/storage:/data/storage -v /ho
 $ docker run --restart=always --name=s3_server -p 10001:10001 -v /home/user/s3-server/storage:/data/storage -v /home/user/s3-server/db:/data/db -d predicsis/s3-server
 ```
 
+## Adding to your tests (RSpec)
+### Instalaltion
+- `Gemfile`
+```ruby
+gem 's3_server'
+```
+- or `gemspec`
+```ruby
+spec.add_development_dependency 's3_server'
+```
+
+### Configuration
+- `spec_helper.rb`
+```ruby
+require 's3_server/server'
+RSpec.configure do |config|
+  # ...
+  config.before(:suite) { S3Server::Server.start }
+  config.after(:suite) { S3Server::Server.stop }
+  # ...
+end
+```
+
 ## Connecting to S3-server
 This application is mainly tested with the [AWS Ruby SDK](https://github.com/aws/aws-sdk-ruby).
 
