@@ -17,8 +17,8 @@ module ErrorManager
           { error: Error.create(code: 'NotImplemented', message: '', resource: error.message),
             status: 404 }
         else
-          { error: Error.create(code: 'Unexpected', message: 'Unexpected error occurred',
-                                resource: error.message),
+          { error: Error.create(code: 'Unexpected', message: error.message,
+                                resource: error.backtrace.to_s),
             status: 500 }
         end
     @error = e[:error]

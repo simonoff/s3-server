@@ -1,5 +1,4 @@
 class ApplicationController < ActionController::Base
-  respond_to :xml
   around_action :retry_on_database_connection_timeout
 
   include ErrorManager
