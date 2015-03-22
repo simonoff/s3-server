@@ -29,13 +29,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dante'
 
   spec.add_development_dependency 'bundler', '~> 1.6'
-  spec.add_development_dependency 'rspec', '3.1.0'
+  spec.add_development_dependency 'rspec', '3.2.0'
   spec.add_development_dependency 'rubocop', '0.20.0'
   spec.add_development_dependency 'codeclimate-test-reporter'
   spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'rspec-rails', '3.1.0'
   spec.add_development_dependency 'spring'
-  spec.add_development_dependency 'cucumber-rails', '1.4.2'
-  spec.add_development_dependency 'faker', '1.4.3'
-  spec.add_development_dependency 'aws-sdk', '~> 1.60.2'
 end

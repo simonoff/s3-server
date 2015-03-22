@@ -1,11 +1,9 @@
 require 'dante'
-require 'carrierwave'
-require 'carrierwave/orm/activerecord'
 
 require File.expand_path('../../../config/application', __FILE__)
 APP_PATH = File.expand_path('../../../config/application',  __FILE__)
 require File.expand_path('../../../config/boot', __FILE__)
-ARGV = ['-p', '10001', 'webrick']
+ARGV = %w(-p 10001 webrick)
 require 'rack/handler'
 
 module S3Server
