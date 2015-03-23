@@ -34,7 +34,9 @@ class FileGenerator
 
       yield file
     ensure
-      file.close # Also delete file
+      suppress(NoMethodError) do
+        file.close # Also delete file
+      end
     end
   end
 end
