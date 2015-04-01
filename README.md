@@ -1,5 +1,7 @@
 # S3-server
 
+**Only for development and test purpose.**
+
 S3-server is a Rails server that responds to the same calls Amazon S3 responds to. It is extremely useful for testing of S3 in a sandbox environment without actually making calls to Amazon, which not only require network.
 
 S3-server doesn't support all of the S3 command set, but the basic ones like put, get, list, copy, multipart uploads, and make bucket are supported. More coming soon.
