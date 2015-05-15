@@ -100,7 +100,7 @@ class S3ObjectsController < ApplicationController
     response.headers.tap do |hs|
       hs['ETag'] = @s3_object.md5
     end
-    head :ok
+    render plain: '', status: :ok
   end
 
   def copy
