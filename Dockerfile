@@ -13,14 +13,10 @@ ENV STORAGE_DIRECTORY /data/storage
 ENV DATABASE_PATH /data/db/production.sqlite3
 
 RUN mkdir -p tmp/pids
-COPY Gemfile /usr/src/app/
-COPY Gemfile.lock /usr/src/app/
+COPY . /usr/src/app
 # throw errors if Gemfile has been modified since Gemfile.lock
 RUN bundle config --global frozen 1
 RUN bundle install --deployment --without development test
-
-
-COPY . /usr/src/app
 
 RUN apt-get update && apt-get install -y nodejs --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
