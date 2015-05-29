@@ -55,7 +55,7 @@ class S3ObjectsController < ApplicationController
     response.headers['Content-Type'] = 'text/event-stream'
     while mp.alive?
       # Periodically sends whitespace characters to keep the connection from timing out
-      response.stream.write ' '
+      response.stream.write ''
       sleep(5)
     end
     mp.join # Ensure multipart completion is finished
@@ -71,12 +71,13 @@ class S3ObjectsController < ApplicationController
     response.headers.tap do |hs|
       hs['ETag'] = etag
     end
-    head :ok
+    render plain: '', status: :ok
   end
 
   def multipart_upload
     @s3_object = S3Object.find_by(uri: uri) || S3Object.new
 
+    params[:key] ||= key
     if params[:key].split('/').last.eql? '${filename}'
       params[:key].sub!('${filename}', file.original_filename)
     else
@@ -125,7 +126,7 @@ class S3ObjectsController < ApplicationController
       response.headers['Content-Type'] = 'text/event-stream'
       while cp.alive?
         # Periodically sends whitespace characters to keep the connection from timing out
-        response.stream.write ' '
+        response.stream.write ''
         sleep(5)
       end
       cp.join # Ensure object copy is finished
