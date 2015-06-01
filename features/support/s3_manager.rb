@@ -1,5 +1,5 @@
 class S3Manager
-  include S3Basicis
+  include [S3BasicsV1, S3BasicsV2].sample
 
   class << self
     def [](client_id)
@@ -16,24 +16,13 @@ class S3Manager
     def download(output, opts = {})
       @opts = opts
 
-      object(*S3Client[@id].s3_params).read do |chunk|
-        output << chunk
-      end
+      dl(*S3Client[@id].s3_params, output)
     end
 
     def upload(file, opts = {})
       @opts = opts
 
-      create_object(*S3Client[@id].s3_params).write(file: file.path)
-    end
-
-    # /!\ Does not work !
-    def upload_multipart(file, opts = {})
-      @opts = opts
-
-      create_object(*S3Client[@id].s3_params).write(content_length: file.size) do |buffer, bytes|
-        buffer.write(file.read(bytes))
-      end
+      ul(*S3Client[@id].s3_params, file)
     end
 
     def object_exists?
@@ -41,7 +30,9 @@ class S3Manager
     end
 
     def copy(src_s3_params)
-      object(*src_s3_params).copy_to(create_object(*S3Client[@id].s3_params))
+      cp(*src_s3_params) do |dest|
+        dest = create_object(*S3Client[@id].s3_params)
+      end
     end
 
     def copy_from_object(s3_object, dst_bucket, dst_key)

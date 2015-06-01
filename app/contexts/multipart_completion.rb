@@ -10,6 +10,7 @@ class MultipartCompletion
 
   def call
     dir = File.join('tmp', 'multiparts', "s3o_#{@s3_object.id}")
+    return unless File.directory?(dir) # Prevent to multiple completion calls (FIX: it is not in AWS API specs)
     parts = Hash.from_xml(@req_body)['CompleteMultipartUpload']['Part']
 
     # Fetch parts

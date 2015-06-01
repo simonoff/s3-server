@@ -63,6 +63,12 @@ $ bundle exec rake db:migrate
 $ bundle exec rails s -p 10001
 ```
 
+## Test
+```bash
+$ bundle exec rails s -p 10001
+$ bundle exec rake cucumber # It launches feature specs with Ruby AWS SDK V1 or v2
+```
+
 ## License
 
 MIT. See the [LICENSE](https://github.com/mdouchement/s3-server/blob/master/LICENSE) for more details.
