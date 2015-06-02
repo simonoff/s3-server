@@ -11,6 +11,7 @@ end
 group :test do
   gem 'cucumber-rails', '1.4.2'
   gem 'faker', '1.4.3'
-  gem 'aws-sdk', '~> 1.60.2'
+  gem 'aws-sdk-v1', '~> 1.60.2'
+  gem 'aws-sdk', '~> 2.0.47'
   gem 'rspec-rails', '~> 3.2.1'
 end

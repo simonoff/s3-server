@@ -1,3 +1,6 @@
+require 'tilt'
+require 'tilt/builder'
+
 class S3ObjectsController < ApplicationController
   include ActionController::Live
   include CleanerManager
@@ -53,9 +56,10 @@ class S3ObjectsController < ApplicationController
     mp.abort_on_exception = true
 
     response.headers['Content-Type'] = 'text/event-stream'
+    response.stream.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     while mp.alive?
       # Periodically sends whitespace characters to keep the connection from timing out
-      response.stream.write ''
+      response.stream.write ' '
       sleep(5)
     end
     mp.join # Ensure multipart completion is finished
@@ -124,9 +128,10 @@ class S3ObjectsController < ApplicationController
       cp.abort_on_exception = true
 
       response.headers['Content-Type'] = 'text/event-stream'
+      response.stream.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       while cp.alive?
         # Periodically sends whitespace characters to keep the connection from timing out
-        response.stream.write ''
+        response.stream.write ' '
         sleep(5)
       end
       cp.join # Ensure object copy is finished
@@ -158,7 +163,7 @@ class S3ObjectsController < ApplicationController
 
   def find_bucket
     @bucket ||= Bucket.find_by(name: params[:bucket_name]) ||
-      Bucket.create!(name: params[:bucket_name], user: User.create!)
+                Bucket.create!(name: params[:bucket_name], user: User.create!)
   end
 
   def source

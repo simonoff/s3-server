@@ -1,0 +1,16 @@
+machine:
+  services:
+    - docker
+
+database:
+  override:
+    - bundle exec rake db:migrate
+
+dependencies:
+  post:
+    - bundle exec rails s -p 10001:
+        background: true
+
+test:
+  override:
+    - bundle exec rake cucumber
