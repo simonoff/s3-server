@@ -1,5 +1,7 @@
 # S3-server
 
+[![Circle CI](https://circleci.com/gh/PredicSis/s3-server/tree/master.svg?style=svg)](https://circleci.com/gh/PredicSis/s3-server/tree/master)
+
 **Only for development and test purpose.**
 
 S3-server is a Rails server that responds to the same calls Amazon S3 responds to. It is extremely useful for testing of S3 in a sandbox environment without actually making calls to Amazon, which not only require network.
