@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::Base
+  include ApplicationHelper
   around_action :retry_on_database_connection_timeout
 
   include ErrorManager

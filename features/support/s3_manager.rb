@@ -30,13 +30,9 @@ class S3Manager
     end
 
     def copy(src_s3_params)
-      cp(*src_s3_params) do |dest|
-        dest = create_object(*S3Client[@id].s3_params)
+      cp(*src_s3_params) do
+        create_object(*S3Client[@id].s3_params)
       end
-    end
-
-    def copy_from_object(s3_object, dst_bucket, dst_key)
-      s3_object.copy_to(create_object(dst_bucket, dst_key))
     end
 
     def object_size

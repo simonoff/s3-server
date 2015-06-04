@@ -25,5 +25,8 @@ module S3Server
     config.autoload_paths += %W(#{config.root}/lib/)
     config.autoload_paths += %W(#{config.root}/lib/modules/)
     config.autoload_paths += %W(#{config.root}/lib/tasks/)
+
+    # Remove warnings raised by CarrierWave with Rails 4.2
+    config.active_record.raise_in_transactional_callbacks = true
   end
 end
