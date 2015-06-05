@@ -46,14 +46,11 @@ class S3ObjectsController < ApplicationController
   def multipart_completion
     @s3_object = S3Object.find(request.query_parameters['uploadId'])
 
-    mp = Thread.new do
-      ActiveRecord::Base.connection_pool.with_connection do
-        MultipartCompletion.call(@s3_object, request.body.read)
-        @s3_object.file.filename = filename
-        @s3_object.save
-      end
+    mp = threaded do
+      MultipartCompletion.call(@s3_object, request.body.read)
+      @s3_object.file.filename = filename
+      @s3_object.save
     end
-    mp.abort_on_exception = true
 
     response.headers['Content-Type'] = 'text/event-stream'
     response.stream.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -63,6 +60,7 @@ class S3ObjectsController < ApplicationController
       sleep(5)
     end
     mp.join # Ensure multipart completion is finished
+    fail mp[:error] if mp[:error]
 
     template = Tilt.new('app/views/s3_objects/multipart_completion.xml.builder')
     response.stream.write template.render(self)
@@ -119,13 +117,16 @@ class S3ObjectsController < ApplicationController
       src_key = src_elts[(1 + root_offset)..-1].join('/')
       src_uri = src_bucket + '/' + src_key
 
-      cp = Thread.new do
-        ActiveRecord::Base.connection_pool.with_connection do
-          @src_s3_object = S3Object.find_by(uri: src_uri)
-          @s3_object = CopyObject.call(@src_s3_object, uri, filename, @bucket, key)
-        end
+      unless S3Object.find_by(uri: src_uri)
+        @error = Error.create(code: 'NoSuchKey', resource: 's3_object',
+                              message: 'The specified source key does not exist')
+        render 'errors/show.xml.builder', status: :not_found
       end
-      cp.abort_on_exception = true
+
+      cp = threaded do
+        @src_s3_object = S3Object.find_by(uri: src_uri)
+        @s3_object = CopyObject.call(@src_s3_object, uri, filename, @bucket, key)
+      end
 
       response.headers['Content-Type'] = 'text/event-stream'
       response.stream.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -135,6 +136,7 @@ class S3ObjectsController < ApplicationController
         sleep(5)
       end
       cp.join # Ensure object copy is finished
+      fail cp[:error] if cp[:error]
 
       template = Tilt.new('app/views/s3_objects/copy.xml.builder')
       response.stream.write template.render(self)

@@ -17,13 +17,16 @@ module ErrorManager
           { error: Error.create(code: 'NotImplemented', message: '', resource: error.message),
             status: 404 }
         else
-          { error: Error.create(code: 'Unexpected', message: error.message,
+          { error: Error.create(code: 'InternalError', message: error.message,
                                 resource: error.backtrace.to_s),
             status: 500 }
         end
+
     @error = e[:error]
-    render 'errors/show.xml.builder', status: e[:status]
+    template = Tilt.new('app/views/errors/show.xml.builder')
+    response.status = e[:status]
+    response.stream.write template.render(self)
   ensure
-    response.stream.close
+    response.stream.close unless response.stream.closed?
   end
 end
