@@ -161,6 +161,25 @@ class S3ObjectsController < ApplicationController
     head :no_content
   end
 
+  def destroy_many
+    keys = case (obj = Hash.from_xml(request.body.read)['Delete']['Object'])
+           when Hash
+             [obj['Key']]
+           when Array
+             obj.map { |object| object['Key'] }
+           end
+    @destroy_many = keys.each_with_object(deleted: [], errors: []) do |key, dm|
+      if (s3_object = S3Object.find_by(key: key))
+        s3_object.destroy!
+        dm[:deleted] << { key: key }
+      else
+        dm[:errors] << { key: key, code: 'NoSuchKey', message: 'The specified key does not exist' }
+      end
+    end
+
+    render 'destroy_many.xml.builder', status: :ok
+  end
+
   private
 
   def find_bucket

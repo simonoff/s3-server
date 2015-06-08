@@ -19,6 +19,10 @@ module S3BasicsV2
       yield.copy_from(copy_source: "#{bucket}/#{key}")
     end
 
+    def delete_objects(bucket, keys)
+      bucket(bucket).delete_objects(delete: { objects: keys.map { |key| { key: key } } })
+    end
+
     def create_bucket(bucket)
       s3.bucket(bucket).create
     end

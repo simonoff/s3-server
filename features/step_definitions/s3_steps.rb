@@ -48,6 +48,14 @@ When(/^I copy an existing object to \/(\S+)$/) do |uri|
   S3Client[:destination].actual_size = S3Manager[:destination].object_size
 end
 
+When(/^I remove several existing objects "(.+)" from bucket \/(\S+)$/) do |keys, bucket|
+  begin
+    S3Manager[:source].delete_objects(bucket, keys.split('|'))
+  rescue => e
+    S3Client[:source].error = e
+  end
+end
+
 Then(/^I can verify the success of the upload$/) do
   expect(S3Manager[:source].object_exists?).to be true
 end
@@ -65,6 +73,10 @@ Then(/^I can verify the size$/) do
   S3Client.each_client do |id|
     expect(S3Client[id].actual_size).to eq(S3Client[id].expected_size)
   end
+end
+
+Then(/^I can verify the success of the deletion$/) do
+  expect(S3Client[:source].error).to be nil
 end
 
 Then(/^I remove the object\(s\) for the next test$/) do

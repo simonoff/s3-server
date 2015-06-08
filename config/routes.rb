@@ -9,6 +9,8 @@ Rails.application.routes.draw do
 
   put '/:bucket_name/*path', to: 's3_objects#copy', constraints: ->(req) { req.headers['x-amz-copy-source'] }
 
+  post '/:bucket_name(/*path)', to: 's3_objects#destroy_many', constraints: ->(req) { req.query_parameters.keys.include?('delete') }
+
   put '/:bucket_name/*path', to: 's3_objects#part_upload', constraints: ->(req) { req.query_parameters['uploadId'] && req.query_parameters['partNumber'] }
   put '/:bucket_name/*path', to: 's3_objects#singlepart_upload'
   post '/:bucket_name/:key_name(/*path)', to: 's3_objects#create', constraints: ->(req) { req.query_parameters['uploads'] }
