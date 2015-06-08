@@ -19,6 +19,10 @@ module S3BasicsV1
       object(bucket, key).copy_to(yield)
     end
 
+    def delete_objects(bucket, keys)
+      bucket(bucket).objects.delete(keys)
+    end
+
     def create_bucket(bucket)
       s3.buckets.create(bucket)
     end

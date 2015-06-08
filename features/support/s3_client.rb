@@ -35,12 +35,12 @@ module S3Client
     end
 
     def wait_threads
-      @threads.each { |t| t.join }
+      @threads.each(&:join)
     end
   end
 
   class Client
     attr_accessor :s3_params, :expected_size, :actual_size,
-                  :file_exist, :previous_scenario_key
+                  :file_exist, :previous_scenario_key, :error
   end
 end
