@@ -3,6 +3,7 @@ require File.expand_path('../boot', __FILE__)
 require 'rails/all'
 require 'carrierwave'
 require 'carrierwave/orm/activerecord'
+require_relative '../lib/chunked_transfer_decoder'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -10,6 +11,7 @@ Bundler.require(*Rails.groups)
 
 module S3Server
   class Application < Rails::Application
+    config.middleware.insert_before 'Rack::Runtime', "ChunkedTransferDecoder", decoded_upstream: false
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
