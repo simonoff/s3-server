@@ -25,4 +25,4 @@ RUN bundle exec rake db:migrate
 VOLUME /data/storage
 VOLUME /data/db
 EXPOSE 10001
-CMD bundle exec rake db:migrate && bundle exec puma -t 2:5 -p 10001
+CMD bundle exec rake db:migrate && bundle exec unicorn -p 10001 -c ./unicorn.conf.rb
