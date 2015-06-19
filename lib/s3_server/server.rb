@@ -16,18 +16,18 @@ module S3Server
         ARGV.insert(0, opts[:port].to_s)
         ARGV.insert(0, '-p')
         require 'rails/commands/commands_tasks'
-        Rails::CommandsTasks.new(ARGV).run_command!('server')
+        ::Rails::CommandsTasks.new(ARGV).run_command!('server')
       end
     end
 
     def self.stop
-      Dante::Runner.new('s3-server').execute(kill: true, pid_path: @s3_pid)
+      ::Dante::Runner.new('s3-server').execute(kill: true, pid_path: @s3_pid)
     end
 
     private
 
     def self.init
-      Rails.application.load_tasks
+      ::Rails.application.load_tasks
       Rake::Task['db:migrate'].invoke
 
       id = Time.now.utc.strftime('%Y%m%d%H%M%S')

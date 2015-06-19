@@ -20,13 +20,11 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 2.0'
 
-  spec.add_dependency 'rails', '~> 4.2.1'
+  spec.add_dependency 'rails', '>= 4.2.1', '< 5.0.0'
   spec.add_dependency 'sqlite3'
   spec.add_dependency 'rack-cors', '0.4.0'
   spec.add_dependency 'carrierwave', '0.10.0'
   spec.add_dependency 'tilt', '2.0.1'
-  spec.add_dependency 'puma', '2.11.3'
-  spec.add_dependency 'dante'
 
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'rspec', '3.2.0'
