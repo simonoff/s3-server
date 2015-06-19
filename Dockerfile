@@ -1,5 +1,5 @@
 FROM ruby:2.2.2
-MAINTAINER mdouchement
+MAINTAINER simonoff
 
 RUN mkdir -p /usr/src/app
 RUN mkdir -p /data/storage
